@@ -296,6 +296,10 @@ int I_GetModeFromString(const char *modestr)
   } else {
     mode = VID_MODE8;
   }
+
+  // OMEGA Hack: Video mode is always OpenGL
+  mode = VID_MODEGL;
+
   return mode;
 }
 
