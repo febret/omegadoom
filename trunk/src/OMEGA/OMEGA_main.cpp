@@ -316,7 +316,7 @@ void OmegaDoomClient::draw(const DrawContext& context)
 		}
 
 		SCREENWIDTH = context.channel->canvasSize->x();
-		SCREENHEIGHT = context.channel->canvasSize->x();
+		SCREENHEIGHT = context.channel->canvasSize->y();
 
 		if (V_GetMode() == VID_MODEGL ? 
 		!movement_smooth || !WasRenderedInTryRunTics :
