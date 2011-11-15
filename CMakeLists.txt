@@ -5,7 +5,7 @@ project(OmegaDoom)
 #find_package(SDL_mixer REQUIRED)
 #find_package(SDL_net REQUIRED)
 
-include(~/omegalib/trunk/CMakeModules/FindOmegalib.cmake)
+include(../../trunk/CMakeModules/FindOmegalib.cmake)
 
 set (SOURCES
 	src/am_map.c
@@ -157,7 +157,6 @@ set (SOURCES
 	src/gl_main.c
 	src/gl_struct.h
 	src/gl_texture.c
-	src/OMEGA/config.h
 	src/OMEGA/i_main.c
 	src/OMEGA/i_system.c
 	src/OMEGA/i_video.c
@@ -169,6 +168,13 @@ set (SOURCES
 	src/OMEGA/OMEGA_main.cpp
 	src/OMEGA/OMEGA_interface.cpp
 	src/OMEGA/OMEGA_interface.h)
+	
+if(WIN32)
+	include_directories(./src/WIN)
+else(WIN32)
+	include_directories(./src/POSIX)
+	add_definitions(-D_GNU_SOURCE)
+endif(WIN32)
 	
 add_executable(omegadoom ${SOURCES})
 
