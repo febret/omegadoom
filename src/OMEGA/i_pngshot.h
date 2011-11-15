@@ -35,8 +35,8 @@
 #ifndef I_PNGSHOT_H
 #define I_PNGSHOT_H
 
-#include "SDL.h"
+// #include "SDL.h"
 
-int I_SavePNG(SDL_Surface *scr, const char *fname);
+// int I_SavePNG(SDL_Surface *scr, const char *fname);
 
 #endif

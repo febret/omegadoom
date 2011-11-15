@@ -161,8 +161,10 @@ public:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void OmegaDoomServer::initialize()
 {
+	sGlobalLock.lock();
 	memset(myButtonState, 0, sizeof(bool) * MaxButtons);
 	D_DoomMainSetup(); // CPhipps - setup out of main execution stack
+	sGlobalLock.unlock();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -279,14 +281,14 @@ void OmegaDoomClient::initialize()
 
 	atexit(I_Quit);
 
-#ifndef _DEBUG
-	signal(SIGSEGV, I_SignalHandler);
-	signal(SIGTERM, I_SignalHandler);
-	signal(SIGFPE,  I_SignalHandler);
-	signal(SIGILL,  I_SignalHandler);
-	signal(SIGINT,  I_SignalHandler);  /* killough 3/6/98: allow CTRL-BRK during init */
-	signal(SIGABRT, I_SignalHandler);
-#endif
+// #ifndef _DEBUG
+	// signal(SIGSEGV, I_SignalHandler);
+	// signal(SIGTERM, I_SignalHandler);
+	// signal(SIGFPE,  I_SignalHandler);
+	// signal(SIGILL,  I_SignalHandler);
+	// signal(SIGINT,  I_SignalHandler);  /* killough 3/6/98: allow CTRL-BRK during init */
+	// signal(SIGABRT, I_SignalHandler);
+// #endif
 
 	I_SetAffinityMask();
 }

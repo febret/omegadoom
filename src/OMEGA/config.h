@@ -46,7 +46,7 @@
 
 /* Define on targets supporting 386 Assembly */
 /* This is in the project settings */
-/* #define I386_ASM 1 */
+/*#define I386_ASM 1*/
 
 #ifdef _DEBUG
 
@@ -86,14 +86,14 @@
 #endif // _DEBUG
 
 /* Define to be the path where Doom WADs are stored */
-#define DOOMWADDIR "/usr/local/share/games/doom"
+#define DOOMWADDIR "/home/evl/febret/omegadoom/build-release"
 
 /* Define if you have the SDL mixer library -lSDL_mixer */
-#define HAVE_LIBSDL_MIXER 1
+/*#define HAVE_LIBSDL_MIXER 1*/
 
 /* Define if you want networkg ame support */
-#define HAVE_NET 1
-#define USE_SDL_NET 1
+/*#define HAVE_NET 1*/
+/*#define USE_SDL_NET 1*/
 
 /* Define if you have struct sockaddr_in6 */
 /* #define HAVE_IPv6 1 */
@@ -111,12 +111,12 @@
 /* #define HAVE_SETSOCKOPT 1 */
 
 /* Define if you have the snprintf function.  */
-#define HAVE_SNPRINTF 1
-#define snprintf _snprintf
+/* #define HAVE_SNPRINTF 1 */
+/* #define snprintf _snprintf */
 
 /* Define if you have the vsnprintf function.  */
-#define HAVE_VSNPRINTF 1
-#define vsnprintf _vsnprintf
+/* #define HAVE_VSNPRINTF 1 */
+/* #define vsnprintf _vsnprintf */
 
 /* Define for support for MBF helper dogs */
 #define DOGS 1
@@ -124,13 +124,13 @@
 #define MONITOR_VISIBILITY 1
 
 /* Define if you want to use the gluTesselator  */
-#define USE_GLU_TESS 1
+/*#define USE_GLU_TESS 1*/
 
 /* Define if you want to use gluImageScale  */
 //#define USE_GLU_IMAGESCALE 1
 
 /* Define if you want to use gluBuild2DMipmaps  */
-#define USE_GLU_MIPMAP 1
+/*#define USE_GLU_MIPMAP 1*/
 
 /* Set to the attribute to apply to struct definitions to make them packed.
  * For MSVC++ we can't do it like this, there are pragma's in the source

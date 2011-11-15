@@ -30,7 +30,9 @@
  *
  *---------------------------------------------------------------------
  */
-
+#include <omega/glheaders.h>
+//#include <GL/glew.h>
+ 
 #include "z_zone.h"
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -42,8 +44,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <SDL.h>
-#include <SDL_opengl.h>
+// #include <SDL.h>
+// #include <SDL_opengl.h>
 #include "doomtype.h"
 #include "w_wad.h"
 #include "m_argv.h"
@@ -305,7 +307,7 @@ static void gld_InitExtensions(const char *_extensions)
     else if (strcasecmp(extension, "GL_EXT_paletted_texture") == 0) {
       if (gl_use_paletted_texture) {
         gl_paletted_texture = true;
-        gld_ColorTableEXT = SDL_GL_GetProcAddress("glColorTableEXT");
+        gld_ColorTableEXT = NULL; //glewGetProcAddress("glColorTableEXT");
 	if (gld_ColorTableEXT == NULL)
 	  gl_paletted_texture = false;
 	else
@@ -315,7 +317,7 @@ static void gld_InitExtensions(const char *_extensions)
     else if (strcasecmp(extension, "GL_EXT_shared_texture_palette") == 0)
       if (gl_use_shared_texture_palette) {
         gl_shared_texture_palette = true;
-        gld_ColorTableEXT = SDL_GL_GetProcAddress("glColorTableEXT");
+        gld_ColorTableEXT = NULL; //glewGetProcAddress("glColorTableEXT");
 	if (gld_ColorTableEXT == NULL)
 	  gl_shared_texture_palette = false;
 	else
@@ -796,8 +798,8 @@ void gld_InitDrawScene(void)
 void gld_Finish(void)
 {
   gld_Set2DMode();
-  glFinish();
-  SDL_GL_SwapBuffers();
+  //glFinish();
+  //SDL_GL_SwapBuffers();
 }
 
 static void gld_AddGlobalVertexes(int count)
