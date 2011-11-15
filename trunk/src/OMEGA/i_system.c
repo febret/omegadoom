@@ -55,7 +55,7 @@
 #include <windows.h>
 #endif
 
-#include "SDL.h"
+//#include "SDL.h"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -99,11 +99,19 @@ static unsigned int start_displaytime;
 static unsigned int displaytime;
 static boolean InDisplay = false;
 
+#include <time.h>
+
+unsigned int SDL_GetTicks()
+{
+  clock_t t = clock();
+  return t * 1000 / CLOCKS_PER_SEC;
+}
+     
 boolean I_StartDisplay(void)
 {
   if (InDisplay)
     return false;
-
+	
   start_displaytime = SDL_GetTicks();
   InDisplay = true;
   return true;
@@ -117,7 +125,7 @@ void I_EndDisplay(void)
 
 void I_uSleep(unsigned long usecs)
 {
-    SDL_Delay(usecs/1000);
+    //SDL_Delay(usecs/1000);
 }
 
 int ms_to_next_tick;

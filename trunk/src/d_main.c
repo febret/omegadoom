@@ -1370,22 +1370,22 @@ void D_DoomMainSetup(void)
     if (myargv[p+1])
       desired_screenheight = atoi(myargv[p+1]);
 
-  if ((p = M_CheckParm("-fullscreen")))
-      use_fullscreen = 1;
+  // if ((p = M_CheckParm("-fullscreen")))
+      // use_fullscreen = 1;
 
-  if ((p = M_CheckParm("-nofullscreen")))
-      use_fullscreen = 0;
+  // if ((p = M_CheckParm("-nofullscreen")))
+      // use_fullscreen = 0;
 
   // e6y
   // New command-line options for setting a window (-window) 
   // or fullscreen (-nowindow) mode temporarily which is not saved in cfg.
   // It works like "-geom" switch
-  desired_fullscreen = use_fullscreen;
-  if ((p = M_CheckParm("-window")))
-      desired_fullscreen = 0;
+  // desired_fullscreen = use_fullscreen;
+  // if ((p = M_CheckParm("-window")))
+      // desired_fullscreen = 0;
 
-  if ((p = M_CheckParm("-nowindow")))
-      desired_fullscreen = 1;
+  // if ((p = M_CheckParm("-nowindow")))
+      // desired_fullscreen = 1;
 
   { // -geometry handling, change screen size for this session only
     // e6y: new code by me

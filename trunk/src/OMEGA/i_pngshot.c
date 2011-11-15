@@ -38,6 +38,8 @@
 
 #include <stdlib.h>
 
+#if 0
+
 #include "SDL.h"
 
 #ifdef HAVE_LIBPNG
@@ -183,3 +185,5 @@ int I_SavePNG(SDL_Surface *scr, const char *fname)
 #endif // HAVE_LIBPNG
   return result;
 }
+
+#endif

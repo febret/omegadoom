@@ -54,16 +54,16 @@
 #define TRUE 1
 #define FALSE 0
 
-#ifndef HAVE_STRLWR
+//#ifndef HAVE_STRLWR
 #include <ctype.h>
 
-//static char* strlwr(char* str)
-//{
-//  char* p;
-//  for (p=str; *p; p++) *p = tolower(*p);
-//  return str;
-//}
-#endif
+static char* strlwr(char* str)
+{
+ char* p;
+ for (p=str; *p; p++) *p = tolower(*p);
+ return str;
+}
+//#endif
 
 // killough 10/98: new functions, to allow processing DEH files in-memory
 // (e.g. from wads)

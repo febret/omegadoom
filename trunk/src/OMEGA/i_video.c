@@ -39,8 +39,6 @@
 #include <unistd.h>
 #endif
 
-#include "SDL.h"
-
 #include "m_argv.h"
 #include "doomstat.h"
 #include "doomdef.h"
@@ -70,9 +68,7 @@ int use_doublebuffer = 0;
 #else
 int use_doublebuffer = 1; // Included not to break m_misc, but not relevant to SDL
 #endif
-int use_fullscreen;
-int desired_fullscreen;
-static SDL_Surface *screen;
+int use_fullscreen = 0;
 
 ////////////////////////////////////////////////////////////////////////////
 // Input code
@@ -83,75 +79,26 @@ extern int     usemouse;        // config file var
 static boolean mouse_enabled; // usemouse, but can be overriden by -nomouse
 static boolean mouse_currently_grabbed;
 
-/////////////////////////////////////////////////////////////////////////////////
-// Main input code
-
-/* cph - pulled out common button code logic */
-static int I_SDLtoDoomMouseState(Uint8 buttonstate)
-{
-  return 0
-      | (buttonstate & SDL_BUTTON(1) ? 1 : 0)
-      | (buttonstate & SDL_BUTTON(2) ? 2 : 0)
-      | (buttonstate & SDL_BUTTON(3) ? 4 : 0);
-}
-
-static void I_GetEvent(SDL_Event *Event)
-{
-  event_t event;
-
-  switch (Event->type) {
-  case SDL_MOUSEBUTTONDOWN:
-  case SDL_MOUSEBUTTONUP:
-  if (mouse_enabled) // recognise clicks even if the pointer isn't grabbed
-  {
-    event.type = ev_mouse;
-    event.data1 = I_SDLtoDoomMouseState(SDL_GetMouseState(NULL, NULL));
-    event.data2 = event.data3 = 0;
-    D_PostEvent(&event);
-  }
-  break;
-
-  case SDL_MOUSEMOTION:
-  if (mouse_currently_grabbed) {
-    event.type = ev_mouse;
-    event.data1 = I_SDLtoDoomMouseState(Event->motion.state);
-    event.data2 = Event->motion.xrel << 5;
-    event.data3 = -Event->motion.yrel << 5;
-    D_PostEvent(&event);
-  }
-  break;
-
-
-  case SDL_QUIT:
-    S_StartSound(NULL, sfx_swtchn);
-    M_QuitDOOM(0);
-
-  default:
-    break;
-  }
-}
-
-
 //
 // I_StartTic
 //
 
 void I_StartTic (void)
 {
-  SDL_Event Event;
-  {
-    boolean should_be_grabbed = mouse_enabled &&
-      !(paused || (gamestate != GS_LEVEL) || demoplayback || menuactive);
+  // SDL_Event Event;
+  // {
+    // boolean should_be_grabbed = mouse_enabled &&
+      // !(paused || (gamestate != GS_LEVEL) || demoplayback || menuactive);
 
-    if (mouse_currently_grabbed != should_be_grabbed)
-      SDL_WM_GrabInput((mouse_currently_grabbed = should_be_grabbed)
-          ? SDL_GRAB_ON : SDL_GRAB_OFF);
-  }
+    // if (mouse_currently_grabbed != should_be_grabbed)
+      // SDL_WM_GrabInput((mouse_currently_grabbed = should_be_grabbed)
+          // ? SDL_GRAB_ON : SDL_GRAB_OFF);
+  // }
 
-  while ( SDL_PollEvent(&Event) )
-    I_GetEvent(&Event);
+  // while ( SDL_PollEvent(&Event) )
+    // I_GetEvent(&Event);
 
-  I_PollJoystick();
+  // I_PollJoystick();
 }
 
 //
@@ -167,16 +114,16 @@ void I_StartFrame (void)
 
 static void I_InitInputs(void)
 {
-  int nomouse_parm = M_CheckParm("-nomouse");
+  // int nomouse_parm = M_CheckParm("-nomouse");
 
-  // check if the user wants to use the mouse
-  mouse_enabled = usemouse && !nomouse_parm;
+  // // check if the user wants to use the mouse
+  // mouse_enabled = usemouse && !nomouse_parm;
 
-  // e6y: fix for turn-snapping bug on fullscreen in software mode
-  if (!nomouse_parm)
-    SDL_WarpMouse((unsigned short)(SCREENWIDTH/2), (unsigned short)(SCREENHEIGHT/2));
+  // // e6y: fix for turn-snapping bug on fullscreen in software mode
+  // if (!nomouse_parm)
+    // SDL_WarpMouse((unsigned short)(SCREENWIDTH/2), (unsigned short)(SCREENHEIGHT/2));
 
-  I_InitJoystick();
+  // I_InitJoystick();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -239,36 +186,28 @@ void I_SetPalette (int pal)
 {
 }
 
-// I_PreInitGraphics
-
-static void I_ShutdownSDL(void)
-{
-  SDL_Quit();
-  return;
-}
-
 void I_PreInitGraphics(void)
 {
-  static const union {
-    const char *c;
-    char *s;
-  } window_pos = {"SDL_VIDEO_WINDOW_POS=center"};
+  // static const union {
+    // const char *c;
+    // char *s;
+  // } window_pos = {"SDL_VIDEO_WINDOW_POS=center"};
 
-  unsigned int flags = 0;
+  // unsigned int flags = 0;
 
-  putenv(window_pos.s);
+  // putenv(window_pos.s);
 
-  // Initialize SDL
-  if (!(M_CheckParm("-nodraw") && M_CheckParm("-nosound")))
-    flags = SDL_INIT_VIDEO;
-#ifdef _DEBUG
-  flags |= SDL_INIT_NOPARACHUTE;
-#endif
-  if ( SDL_Init(flags) < 0 ) {
-    I_Error("Could not initialize SDL [%s]", SDL_GetError());
-  }
+  // // Initialize SDL
+  // // if (!(M_CheckParm("-nodraw") && M_CheckParm("-nosound")))
+    // // flags = SDL_INIT_VIDEO;
+// // #ifdef _DEBUG
+  // // flags |= SDL_INIT_NOPARACHUTE;
+// // #endif
+  // if ( SDL_Init(SDL_INIT_AUDIO) < 0 ) {
+    // I_Error("Could not initialize SDL [%s]", SDL_GetError());
+  // }
 
-  atexit(I_ShutdownSDL);
+  // atexit(I_ShutdownSDL);
 }
 
 // CPhipps -
@@ -366,7 +305,7 @@ void I_UpdateVideoMode(void)
   int i;
   video_mode_t mode;
 
-  lprintf(LO_INFO, "I_UpdateVideoMode: %dx%d (%s)\n", SCREENWIDTH, SCREENHEIGHT, desired_fullscreen ? "fullscreen" : "nofullscreen");
+  //lprintf(LO_INFO, "I_UpdateVideoMode: %dx%d (%s)\n", SCREENWIDTH, SCREENHEIGHT, desired_fullscreen ? "fullscreen" : "nofullscreen");
 
   mode = I_GetModeFromString(default_videomode);
   if ((i=M_CheckParm("-vidmode")) && i<myargc-1) {
@@ -379,63 +318,63 @@ void I_UpdateVideoMode(void)
 
   I_SetRes();
 
-#if 0
-  // Initialize SDL with this graphics mode
-  if (V_GetMode() == VID_MODEGL) {
-    init_flags = SDL_OPENGL;
-  } else {
-    if (use_doublebuffer)
-      init_flags = SDL_DOUBLEBUF;
-    else
-      init_flags = SDL_SWSURFACE;
-#ifndef _DEBUG
-    init_flags |= SDL_HWPALETTE;
-#endif
-  }
+// #if 0
+  // // Initialize SDL with this graphics mode
+  // if (V_GetMode() == VID_MODEGL) {
+    // init_flags = SDL_OPENGL;
+  // } else {
+    // if (use_doublebuffer)
+      // init_flags = SDL_DOUBLEBUF;
+    // else
+      // init_flags = SDL_SWSURFACE;
+// #ifndef _DEBUG
+    // init_flags |= SDL_HWPALETTE;
+// #endif
+  // }
 
-  if ( desired_fullscreen )
-    init_flags |= SDL_FULLSCREEN;
+  // if ( desired_fullscreen )
+    // init_flags |= SDL_FULLSCREEN;
 
-  if (V_GetMode() == VID_MODEGL) {
-    SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 0 );
-    SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 0 );
-    SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 0 );
-    SDL_GL_SetAttribute( SDL_GL_ALPHA_SIZE, 0 );
-    SDL_GL_SetAttribute( SDL_GL_STENCIL_SIZE, 0 );
-    SDL_GL_SetAttribute( SDL_GL_ACCUM_RED_SIZE, 0 );
-    SDL_GL_SetAttribute( SDL_GL_ACCUM_GREEN_SIZE, 0 );
-    SDL_GL_SetAttribute( SDL_GL_ACCUM_BLUE_SIZE, 0 );
-    SDL_GL_SetAttribute( SDL_GL_ACCUM_ALPHA_SIZE, 0 );
-    SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-    SDL_GL_SetAttribute( SDL_GL_BUFFER_SIZE, gl_colorbuffer_bits );
-    SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, gl_depthbuffer_bits );
-    screen = SDL_SetVideoMode(SCREENWIDTH, SCREENHEIGHT, gl_colorbuffer_bits, init_flags);
-  } else {
-    screen = SDL_SetVideoMode(SCREENWIDTH, SCREENHEIGHT, V_GetNumPixelBits(), init_flags);
-  }
+  // if (V_GetMode() == VID_MODEGL) {
+    // SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 0 );
+    // SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 0 );
+    // SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 0 );
+    // SDL_GL_SetAttribute( SDL_GL_ALPHA_SIZE, 0 );
+    // SDL_GL_SetAttribute( SDL_GL_STENCIL_SIZE, 0 );
+    // SDL_GL_SetAttribute( SDL_GL_ACCUM_RED_SIZE, 0 );
+    // SDL_GL_SetAttribute( SDL_GL_ACCUM_GREEN_SIZE, 0 );
+    // SDL_GL_SetAttribute( SDL_GL_ACCUM_BLUE_SIZE, 0 );
+    // SDL_GL_SetAttribute( SDL_GL_ACCUM_ALPHA_SIZE, 0 );
+    // SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+    // SDL_GL_SetAttribute( SDL_GL_BUFFER_SIZE, gl_colorbuffer_bits );
+    // SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, gl_depthbuffer_bits );
+    // screen = SDL_SetVideoMode(SCREENWIDTH, SCREENHEIGHT, gl_colorbuffer_bits, init_flags);
+  // } else {
+    // screen = SDL_SetVideoMode(SCREENWIDTH, SCREENHEIGHT, V_GetNumPixelBits(), init_flags);
+  // }
 
-  if(screen == NULL) {
-    I_Error("Couldn't set %dx%d video mode [%s]", SCREENWIDTH, SCREENHEIGHT, SDL_GetError());
-  }
+  // if(screen == NULL) {
+    // I_Error("Couldn't set %dx%d video mode [%s]", SCREENWIDTH, SCREENHEIGHT, SDL_GetError());
+  // }
 
-  lprintf(LO_INFO, "I_UpdateVideoMode: 0x%x, %s, %s\n", init_flags, screen->pixels ? "SDL buffer" : "own buffer", SDL_MUSTLOCK(screen) ? "lock-and-copy": "direct access");
+  // lprintf(LO_INFO, "I_UpdateVideoMode: 0x%x, %s, %s\n", init_flags, screen->pixels ? "SDL buffer" : "own buffer", SDL_MUSTLOCK(screen) ? "lock-and-copy": "direct access");
 
-  mouse_currently_grabbed = false;
+  // mouse_currently_grabbed = false;
 
-  // Get the info needed to render to the display
-  if (!SDL_MUSTLOCK(screen))
-  {
-    screens[0].not_on_heap = true;
-    screens[0].data = (unsigned char *) (screen->pixels);
-    screens[0].byte_pitch = screen->pitch;
-    screens[0].short_pitch = screen->pitch / V_GetModePixelDepth(VID_MODE16);
-    screens[0].int_pitch = screen->pitch / V_GetModePixelDepth(VID_MODE32);
-  }
-  else
-  {
-    screens[0].not_on_heap = false;
-  }
-#endif
+  // // Get the info needed to render to the display
+  // if (!SDL_MUSTLOCK(screen))
+  // {
+    // screens[0].not_on_heap = true;
+    // screens[0].data = (unsigned char *) (screen->pixels);
+    // screens[0].byte_pitch = screen->pitch;
+    // screens[0].short_pitch = screen->pitch / V_GetModePixelDepth(VID_MODE16);
+    // screens[0].int_pitch = screen->pitch / V_GetModePixelDepth(VID_MODE32);
+  // }
+  // else
+  // {
+    // screens[0].not_on_heap = false;
+  // }
+// #endif
 
 	screens[0].not_on_heap = false;
 
@@ -447,30 +386,30 @@ void I_UpdateVideoMode(void)
   R_InitBuffer(SCREENWIDTH, SCREENHEIGHT);
 
   if (V_GetMode() == VID_MODEGL) {
-    int temp;
-    lprintf(LO_INFO,"SDL OpenGL PixelFormat:\n");
-    SDL_GL_GetAttribute( SDL_GL_RED_SIZE, &temp );
-    lprintf(LO_INFO,"    SDL_GL_RED_SIZE: %i\n",temp);
-    SDL_GL_GetAttribute( SDL_GL_GREEN_SIZE, &temp );
-    lprintf(LO_INFO,"    SDL_GL_GREEN_SIZE: %i\n",temp);
-    SDL_GL_GetAttribute( SDL_GL_BLUE_SIZE, &temp );
-    lprintf(LO_INFO,"    SDL_GL_BLUE_SIZE: %i\n",temp);
-    SDL_GL_GetAttribute( SDL_GL_STENCIL_SIZE, &temp );
-    lprintf(LO_INFO,"    SDL_GL_STENCIL_SIZE: %i\n",temp);
-    SDL_GL_GetAttribute( SDL_GL_ACCUM_RED_SIZE, &temp );
-    lprintf(LO_INFO,"    SDL_GL_ACCUM_RED_SIZE: %i\n",temp);
-    SDL_GL_GetAttribute( SDL_GL_ACCUM_GREEN_SIZE, &temp );
-    lprintf(LO_INFO,"    SDL_GL_ACCUM_GREEN_SIZE: %i\n",temp);
-    SDL_GL_GetAttribute( SDL_GL_ACCUM_BLUE_SIZE, &temp );
-    lprintf(LO_INFO,"    SDL_GL_ACCUM_BLUE_SIZE: %i\n",temp);
-    SDL_GL_GetAttribute( SDL_GL_ACCUM_ALPHA_SIZE, &temp );
-    lprintf(LO_INFO,"    SDL_GL_ACCUM_ALPHA_SIZE: %i\n",temp);
-    SDL_GL_GetAttribute( SDL_GL_DOUBLEBUFFER, &temp );
-    lprintf(LO_INFO,"    SDL_GL_DOUBLEBUFFER: %i\n",temp);
-    SDL_GL_GetAttribute( SDL_GL_BUFFER_SIZE, &temp );
-    lprintf(LO_INFO,"    SDL_GL_BUFFER_SIZE: %i\n",temp);
-    SDL_GL_GetAttribute( SDL_GL_DEPTH_SIZE, &temp );
-    lprintf(LO_INFO,"    SDL_GL_DEPTH_SIZE: %i\n",temp);
+    // int temp;
+    // lprintf(LO_INFO,"SDL OpenGL PixelFormat:\n");
+    // SDL_GL_GetAttribute( SDL_GL_RED_SIZE, &temp );
+    // lprintf(LO_INFO,"    SDL_GL_RED_SIZE: %i\n",temp);
+    // SDL_GL_GetAttribute( SDL_GL_GREEN_SIZE, &temp );
+    // lprintf(LO_INFO,"    SDL_GL_GREEN_SIZE: %i\n",temp);
+    // SDL_GL_GetAttribute( SDL_GL_BLUE_SIZE, &temp );
+    // lprintf(LO_INFO,"    SDL_GL_BLUE_SIZE: %i\n",temp);
+    // SDL_GL_GetAttribute( SDL_GL_STENCIL_SIZE, &temp );
+    // lprintf(LO_INFO,"    SDL_GL_STENCIL_SIZE: %i\n",temp);
+    // SDL_GL_GetAttribute( SDL_GL_ACCUM_RED_SIZE, &temp );
+    // lprintf(LO_INFO,"    SDL_GL_ACCUM_RED_SIZE: %i\n",temp);
+    // SDL_GL_GetAttribute( SDL_GL_ACCUM_GREEN_SIZE, &temp );
+    // lprintf(LO_INFO,"    SDL_GL_ACCUM_GREEN_SIZE: %i\n",temp);
+    // SDL_GL_GetAttribute( SDL_GL_ACCUM_BLUE_SIZE, &temp );
+    // lprintf(LO_INFO,"    SDL_GL_ACCUM_BLUE_SIZE: %i\n",temp);
+    // SDL_GL_GetAttribute( SDL_GL_ACCUM_ALPHA_SIZE, &temp );
+    // lprintf(LO_INFO,"    SDL_GL_ACCUM_ALPHA_SIZE: %i\n",temp);
+    // SDL_GL_GetAttribute( SDL_GL_DOUBLEBUFFER, &temp );
+    // lprintf(LO_INFO,"    SDL_GL_DOUBLEBUFFER: %i\n",temp);
+    // SDL_GL_GetAttribute( SDL_GL_BUFFER_SIZE, &temp );
+    // lprintf(LO_INFO,"    SDL_GL_BUFFER_SIZE: %i\n",temp);
+    // SDL_GL_GetAttribute( SDL_GL_DEPTH_SIZE, &temp );
+    // lprintf(LO_INFO,"    SDL_GL_DEPTH_SIZE: %i\n",temp);
 #ifdef GL_DOOM
     gld_Init(SCREENWIDTH, SCREENHEIGHT);
 #endif
