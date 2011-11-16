@@ -39,5 +39,6 @@ extern int OMEGA_channel_width;
 extern int OMEGA_channel_height;
 extern int OMEGA_canvas_width;
 extern int OMEGA_canvas_height;
+extern int OMEGA_draw_overlay;
 
 #endif

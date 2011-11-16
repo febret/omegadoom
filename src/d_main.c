@@ -83,6 +83,8 @@
 #include "lprintf.h"  // jff 08/03/98 - declaration of lprintf
 #include "am_map.h"
 
+#include "OMEGA_interface.h"
+
 void GetFirstMap(int *ep, int *map); // Ty 08/29/98 - add "-warp x" functionality
 static void D_PageDrawer(void);
 
@@ -231,13 +233,13 @@ void D_Display (void)
 
     switch (gamestate) {
     case GS_INTERMISSION:
-      WI_Drawer();
+      if(OMEGA_draw_overlay) WI_Drawer();
       break;
     case GS_FINALE:
-      F_Drawer();
+      if(OMEGA_draw_overlay) F_Drawer();
       break;
     case GS_DEMOSCREEN:
-      D_PageDrawer();
+      if(OMEGA_draw_overlay) D_PageDrawer();
       break;
     default:
       break;
@@ -257,7 +259,7 @@ void D_Display (void)
     isborder = viewactive ? (viewheight != SCREENHEIGHT) : (!inhelpscreens && (automapmode & am_active));
 
     if (oldgamestate != GS_LEVEL) {
-      R_FillBackScreen ();    // draw the pattern into the back screen
+      //R_FillBackScreen ();    // draw the pattern into the back screen
       redrawborderstuff = isborder;
     } else {
       // CPhipps -
@@ -274,16 +276,21 @@ void D_Display (void)
       R_DrawViewBorder();
 
     // Now do the drawing
-    if (viewactive)
+    if (viewactive && !OMEGA_draw_overlay)
       R_RenderPlayerView (&players[displayplayer]);
     if (automapmode & am_active)
-      AM_Drawer();
-    ST_Drawer(
-        ((viewheight != SCREENHEIGHT)
-         || ((automapmode & am_active) && !(automapmode & am_overlay))),
-        redrawborderstuff,
-        (menuactive == mnact_full));
-    HU_Drawer();
+	{
+      if(OMEGA_draw_overlay) AM_Drawer();
+	}
+	if(OMEGA_draw_overlay)
+	{
+		ST_Drawer(
+			((viewheight != SCREENHEIGHT)
+			 || ((automapmode & am_active) && !(automapmode & am_overlay))),
+			redrawborderstuff,
+			(menuactive == mnact_full));
+		HU_Drawer();
+	}
   }
 
   isborderstate      = isborder;
@@ -1399,7 +1406,7 @@ void D_DoomMainSetup(void)
       w = desired_screenwidth;
       h = desired_screenheight;
     }
-    I_CalculateRes(w, h);
+    //I_CalculateRes(w, h);
   }
 
 #ifdef GL_DOOM
