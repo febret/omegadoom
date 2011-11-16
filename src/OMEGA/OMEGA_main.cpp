@@ -295,8 +295,8 @@ void OmegaDoomClient::draw(const DrawContext& context)
 		OMEGA_canvas_width = context.channel->canvasSize->x();
 		OMEGA_canvas_height = context.channel->canvasSize->y();
 
-		SCREENHEIGHT = OMEGA_channel_height;
-		SCREENWIDTH = OMEGA_channel_width;
+		SCREENHEIGHT = OMEGA_canvas_height;
+		SCREENWIDTH = OMEGA_canvas_width;
 
 		// Make sure OpenGL lighting is disabled.
 		glDisable(GL_LIGHTING);
@@ -319,8 +319,8 @@ void OmegaDoomClient::draw(const DrawContext& context)
 		}
 		else
 		{
-			SCREENWIDTH = OMEGA_channel_width;
-			SCREENHEIGHT = OMEGA_channel_height;
+			SCREENWIDTH = OMEGA_canvas_width;
+			SCREENHEIGHT = OMEGA_canvas_height;
 			OMEGA_draw_overlay = 0;
 		}
 		// Call the main Doom display procedure.

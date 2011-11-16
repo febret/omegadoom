@@ -601,42 +601,25 @@ void R_RenderPlayerView (player_t* player)
     }
   }
 
-  // check for new console commands.
-#ifdef HAVE_NET
-  NetUpdate ();
-#endif
-
   // The head node is the last node output.
   R_RenderBSPNode (numnodes-1);
   R_ResetColumnBuffer();
 
-  // Check for new console commands.
-#ifdef HAVE_NET
-  NetUpdate ();
-#endif
-
   if (V_GetMode() != VID_MODEGL)
     R_DrawPlanes ();
-
-  // Check for new console commands.
-#ifdef HAVE_NET
-  NetUpdate ();
-#endif
 
   if (V_GetMode() != VID_MODEGL) {
     R_DrawMasked ();
     R_ResetColumnBuffer();
   }
 
-  // Check for new console commands.
-#ifdef HAVE_NET
-  NetUpdate ();
-#endif
-
   if (V_GetMode() == VID_MODEGL) {
 #ifdef GL_DOOM
-    // proff 11/99: draw the scene
-    gld_DrawScene(player);
+	if(!OMEGA_draw_overlay)
+	{
+		// proff 11/99: draw the scene
+		gld_DrawScene(player);
+	}
     // proff 11/99: finishing off
     gld_EndDrawScene();
 #endif
