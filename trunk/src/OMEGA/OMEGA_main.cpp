@@ -143,15 +143,18 @@ private:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class OmegaDoomServer: public ApplicationServer
 {
-	enum Buttons {Button1, Button2, Button3, Button4, LSButton, RSButton, MaxButtons };
+	enum Buttons {Button1, Button2, Button3, Button4, LSButton, RSButton, DPadUp, DPadDown, DPadLeft, DPadRight, MaxButtons };
 public:
 	OmegaDoomServer(Application* app): ApplicationServer(app) {}
 	virtual void initialize();
 	virtual void handleEvent(const Event& evt);
 	virtual void update(const UpdateContext& context);
+	void updateButtonState(Buttons btn, float value);
+	void mapButton(Buttons btn, unsigned int key);
 
 private:
 	bool myButtonState[MaxButtons];
+	bool myButtonStateChanged[MaxButtons];
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -167,6 +170,7 @@ void OmegaDoomServer::initialize()
 {
 	sGlobalLock.lock();
 	memset(myButtonState, 0, sizeof(bool) * MaxButtons);
+	memset(myButtonStateChanged, 0, sizeof(bool) * MaxButtons);
 
 	atexit(Z_Close);
 	atexit(I_Quit);
@@ -209,7 +213,47 @@ void OmegaDoomServer::update(const UpdateContext& context)
 	sGlobalLock.unlock();
 }
 
-#define SET_BUTTON_STATE(btn, index) if(evt.getExtraDataFloat(index) > 0) { myButtonState[btn] = true; evt.setProcessed(); } else myButtonState[btn] = false;
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void OmegaDoomServer::updateButtonState(Buttons btn, float value)
+{
+	if(value > 0) 
+	{ 
+		if(!myButtonState[btn])
+		{
+			myButtonState[btn] = true; 
+			myButtonStateChanged[btn] = true; 
+		}
+		else
+		{
+			myButtonStateChanged[btn] = false; 
+		}
+	} 
+	else 
+	{
+		if(myButtonState[btn])
+		{
+			myButtonState[btn] = false; 
+			myButtonStateChanged[btn] = true; 
+		}
+		else
+		{
+			myButtonStateChanged[btn] = false; 
+		}
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void OmegaDoomServer::mapButton(Buttons btn, unsigned int key)
+{
+	if(myButtonStateChanged[btn])
+	{
+		event_t event;
+		if(myButtonState[btn]) event.type == ev_keydown;
+		else event.type == ev_keyup;
+		event.data1 = key;
+		D_PostEvent(&event);
+	}
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void OmegaDoomServer::handleEvent(const Event& evt)
@@ -241,7 +285,7 @@ void OmegaDoomServer::handleEvent(const Event& evt)
 		float yaw = evt.getExtraDataFloat(3) / n;
 		float pitch = evt.getExtraDataFloat(4) / n;
 		float trigger = evt.getExtraDataFloat(5) / n;
-		float tresh = 0.2f;
+		float tresh = 0.4f;
 
 		if(x < tresh && x > -tresh) x = 0;
 		if(y < tresh && y > -tresh) y = 0;
@@ -250,29 +294,43 @@ void OmegaDoomServer::handleEvent(const Event& evt)
 		if(pitch < tresh && pitch > -tresh) pitch = 0;
 		if(trigger < tresh && trigger > -tresh) trigger = 0;
 
-	    event.type = ev_joystick;
-		int xaxis = (x * 32000);
-		int yaxis = (y * 32000);
+		float multiplier = 4000 + trigger * 16000;
 
+	    event.type = ev_joystick;
+		int xaxis = (x * multiplier);
+		int yaxis = (y * multiplier);
+
+		event.data1 = 0;
 		event.data2 = xaxis;
 		event.data3 = yaxis;
 
-		SET_BUTTON_STATE(Button1, 6);
-		SET_BUTTON_STATE(Button2, 7);
-		SET_BUTTON_STATE(Button3, 8);
-		SET_BUTTON_STATE(Button4, 9);
-		SET_BUTTON_STATE(RSButton, 10);
-		SET_BUTTON_STATE(RSButton, 11);
-
-		// Trigger used as button 1.
-		if(trigger < 0) event.data1 = 1;
-
-		event.data1 |= (
-			(myButtonState[Button1] << 1) |
-			(myButtonState[Button2] << 2) |
-			(myButtonState[Button3] << 3));
-
 		D_PostEvent(&event);
+
+		evt.setProcessed(); 
+
+		ofmsg("%1%", %evt.getExtraDataFloat(19));
+
+		updateButtonState(Button1, evt.getExtraDataFloat(6));
+		updateButtonState(Button2, evt.getExtraDataFloat(7));
+		updateButtonState(Button3, evt.getExtraDataFloat(8));
+		updateButtonState(Button4, evt.getExtraDataFloat(9));
+		updateButtonState(RSButton, evt.getExtraDataFloat(10));
+		updateButtonState(LSButton, evt.getExtraDataFloat(11));
+
+		mapButton(Button1, KEYD_ENTER);
+		mapButton(Button1, KEYD_RCTRL);
+
+		mapButton(RSButton, KEYD_RALT);
+		mapButton(RSButton, KEYD_LEFTARROW);
+
+		mapButton(LSButton, KEYD_RALT);
+		mapButton(LSButton, KEYD_RIGHTARROW);
+
+		mapButton(Button3, KEYD_SPACEBAR);
+
+		mapButton(Button2, KEYD_BACKSPACE);
+
+		mapButton(Button4, '0');
 	}
 }
 
