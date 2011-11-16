@@ -168,7 +168,6 @@ public:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void OmegaDoomServer::initialize()
 {
-	sGlobalLock.lock();
 	memset(myButtonState, 0, sizeof(bool) * MaxButtons);
 	memset(myButtonStateChanged, 0, sizeof(bool) * MaxButtons);
 
@@ -178,7 +177,6 @@ void OmegaDoomServer::initialize()
 	Z_Init();
 	I_SetAffinityMask();
 	D_DoomMainSetup();
-	sGlobalLock.unlock();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -248,8 +246,8 @@ void OmegaDoomServer::mapButton(Buttons btn, unsigned int key)
 	if(myButtonStateChanged[btn])
 	{
 		event_t event;
-		if(myButtonState[btn]) event.type == ev_keydown;
-		else event.type == ev_keyup;
+		if(myButtonState[btn]) event.type = ev_keydown;
+		else event.type = ev_keyup;
 		event.data1 = key;
 		D_PostEvent(&event);
 	}
@@ -294,7 +292,7 @@ void OmegaDoomServer::handleEvent(const Event& evt)
 		if(pitch < tresh && pitch > -tresh) pitch = 0;
 		if(trigger < tresh && trigger > -tresh) trigger = 0;
 
-		float multiplier = 4000 + trigger * 16000;
+		float multiplier = 4000 - trigger * 16000;
 
 	    event.type = ev_joystick;
 		int xaxis = (x * multiplier);
