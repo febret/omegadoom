@@ -89,11 +89,11 @@
 #define DOOMWADDIR "/home/evl/febret/omegadoom/build-release"
 
 /* Define if you have the SDL mixer library -lSDL_mixer */
-/*#define HAVE_LIBSDL_MIXER 1*/
+#define HAVE_LIBSDL_MIXER 1
 
 /* Define if you want networkg ame support */
-/*#define HAVE_NET 1*/
-/*#define USE_SDL_NET 1*/
+#define HAVE_NET 1
+#define USE_SDL_NET 1
 
 /* Define if you have struct sockaddr_in6 */
 /* #define HAVE_IPv6 1 */

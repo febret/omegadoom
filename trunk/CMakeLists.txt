@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.8.1) 
 project(OmegaDoom)
 
-#find_package(SDL REQUIRED)
-#find_package(SDL_mixer REQUIRED)
-#find_package(SDL_net REQUIRED)
+find_package(SDL REQUIRED)
+find_package(SDL_mixer REQUIRED)
+find_package(SDL_net REQUIRED)
 
 include(../../trunk/CMakeModules/FindOmegalib.cmake)
 
@@ -179,8 +179,5 @@ endif(WIN32)
 add_executable(omegadoom ${SOURCES})
 
 add_definitions(-DGL_DOOM -DHAVE_CONFIG_H -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE)
-#include_directories(${SDLNET_INCLUDE_DIR} ${SDL_INCLUDE_DIR} ${SDLMIXER_INCLUDE_DIR} ${OMEGA_INCLUDE_DIRS} ./src ./src/OMEGA)
-#target_link_libraries(omegadoom ${SDL_LIBRARY} ${SDLMIXER_LIBRARY} ${SDLNET_LIBRARY} ${OMEGA_LIB})
-
-include_directories(${OMEGA_INCLUDE_DIRS} ./src ./src/OMEGA)
-target_link_libraries(omegadoom ${OMEGA_LIB})
+include_directories(${SDLNET_INCLUDE_DIR} ${SDL_INCLUDE_DIR} ${SDLMIXER_INCLUDE_DIR} ${OMEGA_INCLUDE_DIRS} ./src ./src/OMEGA)
+target_link_libraries(omegadoom ${SDL_LIBRARY} ${SDLMIXER_LIBRARY} ${SDLNET_LIBRARY} ${OMEGA_LIB})

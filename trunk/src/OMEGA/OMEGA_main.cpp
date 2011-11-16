@@ -65,6 +65,8 @@ extern "C"
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "OMEGA_interface.h"
+
 void I_Quit (void);
 void D_DoomMainSetup(void);
 void I_UpdateVideoMode(void);
@@ -73,11 +75,13 @@ int OMEGA_channel_width;
 int OMEGA_channel_height;
 int OMEGA_canvas_width;
 int OMEGA_canvas_height;
+int OMEGA_draw_overlay;
 
 }
 
 using namespace omega;
 
+// This lock is used to serialize rendering on multipipe configurations, since the Doom draw code is potentially not thread-safe.
 Lock sGlobalLock;
 
 extern const omega::DrawContext* sCurrentDrawContext;
@@ -163,7 +167,13 @@ void OmegaDoomServer::initialize()
 {
 	sGlobalLock.lock();
 	memset(myButtonState, 0, sizeof(bool) * MaxButtons);
-	D_DoomMainSetup(); // CPhipps - setup out of main execution stack
+
+	atexit(Z_Close);
+	atexit(I_Quit);
+
+	Z_Init();
+	I_SetAffinityMask();
+	D_DoomMainSetup();
 	sGlobalLock.unlock();
 }
 
@@ -270,62 +280,51 @@ void OmegaDoomServer::handleEvent(const Event& evt)
 void OmegaDoomClient::initialize()
 {
 	myNeedGraphicsInit = true;
-	/* Version info */
-	//lprintf(LO_INFO,"\n");
-	//PrintVer();
-
-	/* cph - Z_Close must be done after I_Quit, so we register it first. */
-	atexit(Z_Close);
-
-	Z_Init();                  /* 1/18/98 killough: start up memory stuff first */
-
-	atexit(I_Quit);
-
-// #ifndef _DEBUG
-	// signal(SIGSEGV, I_SignalHandler);
-	// signal(SIGTERM, I_SignalHandler);
-	// signal(SIGFPE,  I_SignalHandler);
-	// signal(SIGILL,  I_SignalHandler);
-	// signal(SIGINT,  I_SignalHandler);  /* killough 3/6/98: allow CTRL-BRK during init */
-	// signal(SIGABRT, I_SignalHandler);
-// #endif
-
-	I_SetAffinityMask();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void OmegaDoomClient::draw(const DrawContext& context)
 {
-	sGlobalLock.lock();
-
-	if(context.task == DrawContext::SceneDrawTask)
+	if(myNeedGraphicsInit)
 	{
-		sCurrentDrawContext = &context;
+		sGlobalLock.lock();
+		myNeedGraphicsInit = false;
 
-		if(myNeedGraphicsInit)
+		OMEGA_channel_width = context.viewport.width();
+		OMEGA_channel_height  = context.viewport.height();
+		OMEGA_canvas_width = context.channel->canvasSize->x();
+		OMEGA_canvas_height = context.channel->canvasSize->y();
+
+		SCREENHEIGHT = OMEGA_channel_height;
+		SCREENWIDTH = OMEGA_channel_width;
+
+		// Make sure OpenGL lighting is disabled.
+		glDisable(GL_LIGHTING);
+
+		I_UpdateVideoMode();
+		sGlobalLock.unlock();
+		return;
+	}
+
+	sGlobalLock.lock();
+	sCurrentDrawContext = &context;
+	if (!movement_smooth || !WasRenderedInTryRunTics)
+	{
+		if(context.task == DrawContext::OverlayDrawTask) 
 		{
-			myNeedGraphicsInit = false;
-
-			OMEGA_channel_width = context.viewport.width();
-			OMEGA_channel_height  = context.viewport.height();
-			OMEGA_canvas_width = context.channel->canvasSize->x();
-			OMEGA_canvas_height = context.channel->canvasSize->y();
-
-			I_PreInitGraphics();
-			I_UpdateVideoMode();
+			OMEGA_BeginDraw2D();
+			SCREENWIDTH = OMEGA_canvas_width;
+			SCREENHEIGHT = OMEGA_canvas_height;
+			OMEGA_draw_overlay = 1;
 		}
-
-		SCREENWIDTH = context.channel->canvasSize->x();
-		SCREENHEIGHT = context.channel->canvasSize->y();
-
-		if (V_GetMode() == VID_MODEGL ? 
-		!movement_smooth || !WasRenderedInTryRunTics :
-		!movement_smooth || !WasRenderedInTryRunTics || gamestate != wipegamestate)
+		else
 		{
-			glDisable(GL_LIGHTING);
-			// Update display, next frame, with current state.
-			D_Display();
+			SCREENWIDTH = OMEGA_channel_width;
+			SCREENHEIGHT = OMEGA_channel_height;
+			OMEGA_draw_overlay = 0;
 		}
+		// Call the main Doom display procedure.
+		D_Display();
 	}
 
 	sGlobalLock.unlock();
@@ -340,8 +339,6 @@ int main(int argc, char **argv)
 	OmegaDoom app;
 
 	// Read config file name from command line or use default one.
-	// NOTE: being a simple application, ohello does not have any application-specific configuration option. 
-	// So, we are going to load directly a system configuration file.
 	const char* cfgName = "system/desktop.cfg";
 	if(argc == 2) cfgName = argv[1];
 

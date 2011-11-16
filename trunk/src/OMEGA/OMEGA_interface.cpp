@@ -56,6 +56,8 @@ void OMEGA_BeginDraw2D()
     glLoadIdentity();
     glOrtho(left, right, bottom, top, -1, 1);
 
+	glDisable(GL_DEPTH_TEST);
+
     glMatrixMode(GL_MODELVIEW);
 }
 
