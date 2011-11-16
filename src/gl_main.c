@@ -1846,7 +1846,7 @@ void gld_EndDrawScene(void)
 
   glDisable(GL_POLYGON_SMOOTH);
 
-  glViewport(0, 0, SCREENWIDTH, SCREENHEIGHT);
+  //glViewport(0, 0, SCREENWIDTH, SCREENHEIGHT);
   glDisable(GL_FOG);
   gld_Set2DMode();
 

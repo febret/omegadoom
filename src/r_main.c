@@ -589,8 +589,11 @@ void R_RenderPlayerView (player_t* player)
 #ifdef GL_DOOM
     // proff 11/99: clear buffers
     gld_InitDrawScene();
-    // proff 11/99: switch to perspective mode
-    gld_StartDrawScene();
+	if(!OMEGA_draw_overlay)
+	{
+		// proff 11/99: switch to perspective mode
+		gld_StartDrawScene();
+	}
 #endif
   } else {
     if (autodetect_hom)

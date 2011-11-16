@@ -43,7 +43,6 @@ extern "C"
 void OMEGA_BeginDraw2D()
 {
     glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
     glLoadIdentity();
 
 	int left = sCurrentDrawContext->channel->offset[0];
@@ -52,7 +51,6 @@ void OMEGA_BeginDraw2D()
 	int bottom = top + sCurrentDrawContext->channel->size[1];
 
     glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
     glLoadIdentity();
     glOrtho(left, right, bottom, top, -1, 1);
 
@@ -65,20 +63,13 @@ void OMEGA_BeginDraw2D()
 void OMEGA_BeginDraw3D()
 {
     glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
 	glLoadMatrixf(sCurrentDrawContext->projection.data());
 
     glMatrixMode(GL_MODELVIEW);
 
 	glViewport(sCurrentDrawContext->viewport.x(), sCurrentDrawContext->viewport.y(), sCurrentDrawContext->viewport.width(), sCurrentDrawContext->viewport.height());
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glEnable(GL_DEPTH_TEST);
-	glDepthMask(GL_TRUE);
-
- //   glMatrixMode(GL_MODELVIEW);
- //   glPushMatrix();
-	//glLoadMatrixf(sCurrentDrawContext->modelview.data());
+	//glDepthMask(GL_TRUE);
 }
 
 }
