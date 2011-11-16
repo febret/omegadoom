@@ -272,11 +272,11 @@ void D_Display (void)
         ? (menuactive && isborder)
         : (!inhelpscreens && menuactive == mnact_full);
     }
-    if (redrawborderstuff || (V_GetMode() == VID_MODEGL))
-      R_DrawViewBorder();
+    //if (redrawborderstuff || (V_GetMode() == VID_MODEGL))
+    //  R_DrawViewBorder();
 
     // Now do the drawing
-    if (viewactive && !OMEGA_draw_overlay)
+    if (viewactive)
       R_RenderPlayerView (&players[displayplayer]);
     if (automapmode & am_active)
 	{

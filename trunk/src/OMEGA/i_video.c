@@ -147,7 +147,7 @@ void I_FinishUpdate (void)
 {
   if (V_GetMode() == VID_MODEGL) 
   {
-    gld_Finish();
+    //gld_Finish();
   }
 }
 

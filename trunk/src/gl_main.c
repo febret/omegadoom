@@ -1810,11 +1810,11 @@ void gld_StartDrawScene(void)
   yaw=270.0f-(float)(viewangle>>ANGLETOFINESHIFT)*360.0f/FINEANGLES;
   inv_yaw=-90.0f+(float)(viewangle>>ANGLETOFINESHIFT)*360.0f/FINEANGLES;
 
-#ifdef _DEBUG
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#else
-  glClear(GL_DEPTH_BUFFER_BIT);
-#endif
+//#ifdef _DEBUG
+//  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//#else
+//  glClear(GL_DEPTH_BUFFER_BIT);
+//#endif
 
   glEnable(GL_DEPTH_TEST);
 
@@ -1852,8 +1852,11 @@ void gld_EndDrawScene(void)
 
   if (viewangleoffset <= 1024<<ANGLETOFINESHIFT ||
     viewangleoffset >=-1024<<ANGLETOFINESHIFT)
-  { // don't draw on side views
-    R_DrawPlayerSprites();
+  { 
+	  if(OMEGA_draw_overlay)
+	  {
+		R_DrawPlayerSprites();
+	  }
   }
   if (player->fixedcolormap == 32) {
 		glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ZERO);
