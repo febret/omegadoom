@@ -283,7 +283,7 @@ void OmegaDoomServer::handleEvent(const Event& evt)
 		float yaw = evt.getExtraDataFloat(3) / n;
 		float pitch = evt.getExtraDataFloat(4) / n;
 		float trigger = evt.getExtraDataFloat(5) / n;
-		float tresh = 0.4f;
+		float tresh = 0.2f;
 
 		if(x < tresh && x > -tresh) x = 0;
 		if(y < tresh && y > -tresh) y = 0;
@@ -295,7 +295,7 @@ void OmegaDoomServer::handleEvent(const Event& evt)
 		float multiplier = 4000 - trigger * 16000;
 
 	    event.type = ev_joystick;
-		int xaxis = (x * multiplier);
+		int xaxis = ((x + yaw) * multiplier);
 		int yaxis = (y * multiplier);
 
 		event.data1 = 0;
