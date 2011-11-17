@@ -155,6 +155,8 @@ public:
 private:
 	bool myButtonState[MaxButtons];
 	bool myButtonStateChanged[MaxButtons];
+	float myMaxFps;
+	float myLastFrameTime;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -170,6 +172,9 @@ void OmegaDoomServer::initialize()
 {
 	memset(myButtonState, 0, sizeof(bool) * MaxButtons);
 	memset(myButtonStateChanged, 0, sizeof(bool) * MaxButtons);
+	
+	myMaxFps = 30;
+	myLastFrameTime = 10;
 
 	atexit(Z_Close);
 	atexit(I_Quit);
@@ -182,6 +187,11 @@ void OmegaDoomServer::initialize()
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void OmegaDoomServer::update(const UpdateContext& context)
 {
+	float minFrameTime = 1.0f / myMaxFps;
+	if(context.time - myLastFrameTime < minFrameTime) return;
+	
+	myLastFrameTime = context.time;
+	
 	sGlobalLock.lock();
     WasRenderedInTryRunTics = false;
     // frame syncronous IO operations
@@ -190,6 +200,7 @@ void OmegaDoomServer::update(const UpdateContext& context)
     if (ffmap == gamemap) ffmap = 0;
 
     // process one or more tics
+	singletics = 1;
     if (singletics)
     {
         I_StartTic ();
