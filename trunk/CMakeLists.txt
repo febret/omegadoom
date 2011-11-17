@@ -5,7 +5,7 @@ find_package(SDL REQUIRED)
 find_package(SDL_mixer REQUIRED)
 find_package(SDL_net REQUIRED)
 
-include(../../trunk/CMakeModules/FindOmegalib.cmake)
+include(../../omegalib/trunk/CMakeModules/FindOmegalib.cmake)
 
 set (SOURCES
 	src/am_map.c

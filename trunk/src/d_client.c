@@ -488,18 +488,18 @@ void TryRunTics (void)
 #endif
         M_Ticker(); return;
       }
-      //if ((displaytime) < (tic_vars.next-SDL_GetTicks()))
-      {
-        WasRenderedInTryRunTics = true;
-        if (V_GetMode() == VID_MODEGL ? 
-            movement_smooth : 
-            movement_smooth && gamestate==wipegamestate)
-        {
-          isExtraDDisplay = true;
-          D_Display();
-          isExtraDDisplay = false;
-        }
-      }
+      // //if ((displaytime) < (tic_vars.next-SDL_GetTicks()))
+      // {
+        // WasRenderedInTryRunTics = true;
+        // if (V_GetMode() == VID_MODEGL ? 
+            // movement_smooth : 
+            // movement_smooth && gamestate==wipegamestate)
+        // {
+          // isExtraDDisplay = true;
+          // D_Display();
+          // isExtraDDisplay = false;
+        // }
+      // }
     } else break;
   }
 
