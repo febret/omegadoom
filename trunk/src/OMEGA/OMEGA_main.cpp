@@ -157,6 +157,9 @@ private:
 	bool myButtonStateChanged[MaxButtons];
 	float myMaxFps;
 	float myLastFrameTime;
+	int myLastMouseX;
+	int myLastMouseY;
+	event_t myMouseEvent;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -187,6 +190,8 @@ void OmegaDoomServer::initialize()
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void OmegaDoomServer::update(const UpdateContext& context)
 {
+	movement_smooth = 0;
+
 	float minFrameTime = 1.0f / myMaxFps;
 	if(context.time - myLastFrameTime < minFrameTime) return;
 	
@@ -200,7 +205,7 @@ void OmegaDoomServer::update(const UpdateContext& context)
     if (ffmap == gamemap) ffmap = 0;
 
     // process one or more tics
-	singletics = 1;
+	singletics = 0;
     if (singletics)
     {
         I_StartTic ();
@@ -267,7 +272,12 @@ void OmegaDoomServer::mapButton(Buttons btn, unsigned int key)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void OmegaDoomServer::handleEvent(const Event& evt)
 {
+	sGlobalLock.lock();
+
+	myMouseEvent.data2 = 0;
+
 	event_t event;
+
 	if(evt.getServiceType() == Service::Keyboard)
 	{
 		int keycode = I_TranslateKey(evt.getSourceId());
@@ -284,63 +294,88 @@ void OmegaDoomServer::handleEvent(const Event& evt)
 			D_PostEvent(&event);
 		}
 	}
-	else if(evt.getServiceType() == Service::Controller)
+	if(evt.getServiceType() == Service::Pointer)
 	{
-		float n = 1000;
+		int mult = 5;
+		myMouseEvent.type = ev_mouse;
+		int dx = evt.getPosition().x() - myLastMouseX;
+		int dy = evt.getPosition().y() - myLastMouseY;
+		int flags = 0;
 
-		float x = evt.getExtraDataFloat(1) / n;
-		float y = evt.getExtraDataFloat(2) / n;
-		float z = evt.getExtraDataFloat(5) / n;
-		float yaw = evt.getExtraDataFloat(3) / n;
-		float pitch = evt.getExtraDataFloat(4) / n;
-		float trigger = evt.getExtraDataFloat(5) / n;
-		float tresh = 0.2f;
+		if(evt.isFlagSet(Event::Left)) flags |= 1 << 0;
+		if(evt.isFlagSet(Event::Right)) flags |= 1 << 1;
+		if(evt.isFlagSet(Event::Middle)) flags |= 1 << 2;
 
-		if(x < tresh && x > -tresh) x = 0;
-		if(y < tresh && y > -tresh) y = 0;
-		if(z < tresh && z > -tresh) z = 0;
-		if(yaw < tresh && yaw > -tresh) yaw = 0;
-		if(pitch < tresh && pitch > -tresh) pitch = 0;
-		if(trigger < tresh && trigger > -tresh) trigger = 0;
+		myMouseEvent.data1 = flags;
+		myMouseEvent.data2 = dx * mult;
+		myMouseEvent.data3 = dy;
 
-		float multiplier = 4000 - trigger * 16000;
+		myLastMouseX = evt.getPosition().x();
+		myLastMouseY = evt.getPosition().y();
 
-	    event.type = ev_joystick;
-		int xaxis = ((x + yaw) * multiplier);
-		int yaxis = (y * multiplier);
-
-		event.data1 = 0;
-		event.data2 = xaxis;
-		event.data3 = yaxis;
-
-		D_PostEvent(&event);
-
-		evt.setProcessed(); 
-
-		ofmsg("%1%", %evt.getExtraDataFloat(19));
-
-		updateButtonState(Button1, evt.getExtraDataFloat(6));
-		updateButtonState(Button2, evt.getExtraDataFloat(7));
-		updateButtonState(Button3, evt.getExtraDataFloat(8));
-		updateButtonState(Button4, evt.getExtraDataFloat(9));
-		updateButtonState(RSButton, evt.getExtraDataFloat(10));
-		updateButtonState(LSButton, evt.getExtraDataFloat(11));
-
-		mapButton(Button1, KEYD_ENTER);
-		mapButton(Button1, KEYD_RCTRL);
-
-		mapButton(RSButton, KEYD_RALT);
-		mapButton(RSButton, KEYD_LEFTARROW);
-
-		mapButton(LSButton, KEYD_RALT);
-		mapButton(LSButton, KEYD_RIGHTARROW);
-
-		mapButton(Button3, KEYD_SPACEBAR);
-
-		mapButton(Button2, KEYD_BACKSPACE);
-
-		mapButton(Button4, '0');
+		D_PostEvent(&myMouseEvent);
 	}
+	//else if(evt.getServiceType() == Service::Controller)
+	//{
+	//	float n = 1000;
+
+	//	float x = evt.getExtraDataFloat(1) / n;
+	//	float y = evt.getExtraDataFloat(2) / n;
+	//	float z = evt.getExtraDataFloat(5) / n;
+	//	float yaw = evt.getExtraDataFloat(3) / n;
+	//	float pitch = evt.getExtraDataFloat(4) / n;
+	//	float trigger = evt.getExtraDataFloat(5) / n;
+	//	float tresh = 0.2f;
+
+	//	if(x < tresh && x > -tresh) x = 0;
+	//	if(y < tresh && y > -tresh) y = 0;
+	//	if(z < tresh && z > -tresh) z = 0;
+	//	if(yaw < tresh && yaw > -tresh) yaw = 0;
+	//	if(pitch < tresh && pitch > -tresh) pitch = 0;
+	//	if(trigger < tresh && trigger > -tresh) trigger = 0;
+
+	//	float multiplier = 4000 - trigger * 16000;
+
+	//    event.type = ev_joystick;
+	//	int xaxis = ((x + yaw) * multiplier);
+	//	int yaxis = (y * multiplier);
+
+	//	event.data1 = 0;
+	//	event.data2 = xaxis;
+	//	event.data3 = yaxis;
+
+	//	D_PostEvent(&event);
+
+	//	evt.setProcessed(); 
+
+	//	ofmsg("%1%", %evt.getExtraDataFloat(19));
+
+	//	updateButtonState(Button1, evt.getExtraDataFloat(6));
+	//	updateButtonState(Button2, evt.getExtraDataFloat(7));
+	//	updateButtonState(Button3, evt.getExtraDataFloat(8));
+	//	updateButtonState(Button4, evt.getExtraDataFloat(9));
+	//	updateButtonState(RSButton, evt.getExtraDataFloat(10));
+	//	updateButtonState(LSButton, evt.getExtraDataFloat(11));
+
+	//	mapButton(Button1, KEYD_ENTER);
+	//	mapButton(Button1, KEYD_RCTRL);
+
+	//	mapButton(RSButton, KEYD_RALT);
+	//	mapButton(RSButton, KEYD_LEFTARROW);
+
+	//	mapButton(LSButton, KEYD_RALT);
+	//	mapButton(LSButton, KEYD_RIGHTARROW);
+
+	//	mapButton(Button3, KEYD_SPACEBAR);
+
+	//	mapButton(Button2, KEYD_BACKSPACE);
+
+	//	mapButton(Button4, '0');
+	//}
+
+	//D_PostEvent(&myMouseEvent);
+
+	sGlobalLock.unlock();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -373,7 +408,7 @@ void OmegaDoomClient::draw(const DrawContext& context)
 		return;
 	}
 
-	sGlobalLock.lock();
+	//sGlobalLock.lock();
 	sCurrentDrawContext = &context;
 	if (!movement_smooth || !WasRenderedInTryRunTics)
 	{
@@ -394,7 +429,7 @@ void OmegaDoomClient::draw(const DrawContext& context)
 		D_Display();
 	}
 
-	sGlobalLock.unlock();
+	//sGlobalLock.unlock();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
