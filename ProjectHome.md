@@ -1,0 +1,1 @@
+omegadoom is a port of the PrBoom engine to omegalib (http://code.google.com/p/omegalib/). It is designed to run on virtual reality / immersive systems or tiled display. Omegadoom supports head tracking, stereo rendering, and XBox360 controller input.
